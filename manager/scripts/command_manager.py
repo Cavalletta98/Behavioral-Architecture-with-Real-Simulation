@@ -16,10 +16,25 @@ from geometry_msgs.msg import Point,PoseStamped
 import actionlib
 from robot_control.msg import RobotPlanningAction, RobotPlanningActionGoal
 
-min_transition_normal_sleep = 1
-max_transition_normal_sleep = 10
+## Min delay for transition between NORMAL and SLEEP states
+min_transition_normal_sleep = rospy.get_param("min_transition_normal_sleep")
 
-home_pos = Point(5,5,0)
+## Max delay for transition between NORMAL and SLEEP states
+max_transition_normal_sleep = rospy.get_param("max_transition_normal_sleep")
+
+## 2D home position
+home_pos = Point(rospy.get_param("home_pos_x"),rospy.get_param("home_pos_y"),0)
+
+## Min delay for SLEEP state
+min_sleep_delay = rospy.get_param("min_sleep_delay")
+
+## Max delay for SLEEP state
+max_sleep_delay = rospy.get_param("max_sleep_delay")
+
+## x coordinate of the map
+map_x = rospy.get_param("map_x")
+## y coordinate of the map
+map_y = rospy.get_param("map_y")
 
 # define state Sleep
 class sleep(smach.State):
@@ -71,8 +86,8 @@ class sleep(smach.State):
 
         # Creates a goal to send to the action server.
         goal = RobotPlanningActionGoal()
-        goal.goal.target_pose.pose.position.x = random.uniform(-10,10)
-        goal.goal.target_pose.pose.position.y = random.uniform(-10,10)
+        goal.goal.target_pose.pose.position.x = x
+        goal.goal.target_pose.pose.position.y = y
 
         # Sends the goal to the action server.
         client.send_goal(goal.goal)
@@ -98,7 +113,8 @@ class sleep(smach.State):
 
 
         result = self.target_pos_client(home_pos.x,home_pos.y)
-        rospy.loginfo("Robot arrived in home(%d,%d)",home_pos.x,home_pos.y)
+        rospy.loginfo("Robot arrived in home(%ld,%ld)",result.position.position.x,result.position.position.y)
+        time.sleep(random.uniform(min_sleep_delay,max_sleep_delay))
         
         return 'wakeUp'
     
@@ -158,8 +174,8 @@ class normal(smach.State):
 
         # Creates a goal to send to the action server.
         goal = RobotPlanningActionGoal()
-        goal.goal.target_pose.pose.position.x = random.uniform(-10,10)
-        goal.goal.target_pose.pose.position.y = random.uniform(-10,10)
+        goal.goal.target_pose.pose.position.x = x
+        goal.goal.target_pose.pose.position.y = y
 
         # Sends the goal to the action server.
         client.send_goal(goal.goal)
@@ -184,10 +200,10 @@ class normal(smach.State):
         count_value = random.randint(min_transition_normal_sleep,max_transition_normal_sleep)
 
         for count in range(0,count_value):
-            x = random.uniform(-10,10)
-            y = random.uniform(-10,10)
+            x = random.uniform(-8,map_x)
+            y = random.uniform(-8,map_y)
             result = self.target_pos_client(x,y)
-            rospy.loginfo("Robot arrived in (%d,%d)",x,y)
+            rospy.loginfo("Robot arrived in (%lf,%lf)",result.position.position.x,result.position.position.y)
 
         return 'someTimes'
 

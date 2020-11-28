@@ -168,6 +168,7 @@ def planning(goal):
         rate.sleep()
     if success:
         rospy.loginfo('Goal: Succeeded!')
+        result.position = pose_
         act_s.set_succeeded(result)
 
 
