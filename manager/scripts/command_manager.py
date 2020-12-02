@@ -15,6 +15,7 @@ import random
 from geometry_msgs.msg import Point,PoseStamped
 import actionlib
 from robot_control.msg import RobotPlanningAction, RobotPlanningActionGoal
+from sensoring.srv import DetectImage
 
 ## Min delay for transition between NORMAL and SLEEP states
 min_transition_normal_sleep = rospy.get_param("min_transition_normal_sleep")
@@ -153,6 +154,27 @@ class normal(smach.State):
         """
 
         smach.State.__init__(self,outcomes=['someTimes'])
+    
+    def object_detector_client(self):
+
+        """
+            Makes a request to motion server using the target position (x,y) 
+            and wait for the response
+
+            @param x: x coordinate of the target position
+            @type x: int
+            @param y: y coordinate of the target position
+            @type y: int
+
+        """
+
+        rospy.wait_for_service('detect_image')
+        try:
+            detect_obj_serv = rospy.ServiceProxy('detect_image', DetectImage)
+            resp = detect_obj_serv()
+            return resp
+        except rospy.ServiceException as e:
+            rospy.logerr("Service call failed: %s",e)
 
     def target_pos_client(self,x, y):
 
@@ -198,10 +220,14 @@ class normal(smach.State):
         rospy.loginfo('Executing state NORMAL')
 
         count_value = random.randint(min_transition_normal_sleep,max_transition_normal_sleep)
+        neg_map_x = map_x*-1
+        neg_map_y = map_y*-1
 
         for count in range(0,count_value):
-            x = random.uniform(-8,map_x)
-            y = random.uniform(-8,map_y)
+            resp = self.object_detector_client()
+            rospy.loginfo(resp)       
+            x = random.uniform(neg_map_x,map_x)
+            y = random.uniform(neg_map_y,map_y)
             result = self.target_pos_client(x,y)
             rospy.loginfo("Robot arrived in (%lf,%lf)",result.position.position.x,result.position.position.y)
 
