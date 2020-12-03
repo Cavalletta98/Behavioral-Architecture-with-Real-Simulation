@@ -21,6 +21,7 @@ import rospy
 from sensor_msgs.msg import CompressedImage
 from sensoring.srv import DetectImage,DetectImageResponse
 
+global resp_center,resp_radius
 
 VERBOSE = False
 
@@ -31,25 +32,16 @@ class image_feature:
         rospy.init_node('image_detector', anonymous=True)
         
         # subscribed Topic
-        self.subscriber = rospy.Subscriber("camera1/image_raw/compressed",CompressedImage, self.callback,  queue_size=1)
-
-        self.s = rospy.Service('detect_image', DetectImage, self.handle_object)
+        
+        self.subscriber = rospy.Subscriber("/robot/camera1/image_raw/compressed",CompressedImage, self.callback,  queue_size=1)
         self.resp_center = -1
         self.resp_radius = -1
 
-    def handle_object(self,req):
+    def getCenter(self):
+        return self.resp_center
 
-        """
-            Received a request (2D position), sleep for a random number fo seconds
-            and reply with "arrvied"
-
-            @param req: requested data
-            @type req: TargetPosResponse
-        """
-
-        resp = DetectImageResponse()
-        resp.object = str(self.resp_center)+" "+str(self.resp_radius)
-        return resp
+    def getRadius(self):
+        return self.resp_radius
 
     def callback(self, ros_data):
         '''Callback function of subscribed topic. 
@@ -88,7 +80,6 @@ class image_feature:
             if radius > 10:
                 # draw the circle and centroid on the frame,
                 # then update the list of tracked points
-                rospy.loginfo("Detect!!!!!!!!!")
                 cv2.circle(image_np, (int(x), int(y)), int(radius),
                            (0, 255, 255), 2)
                 cv2.circle(image_np, center, 5, (0, 0, 255), -1)
@@ -104,13 +95,36 @@ class image_feature:
 
         cv2.imshow('window', image_np)
         cv2.waitKey(2)
+        #self.subscriber.unregister()
 
-        # self.subscriber.unregister()
+class client_handler:
+
+    def __init__(self):
+        '''Initialize ros publisher, ros subscriber'''
+        rospy.init_node('image_detector', anonymous=True)
+        
+        # subscribed Topic
+        self.ic = image_feature()
+        self.s = rospy.Service('detect_image', DetectImage, self.handle_object)
+
+    def handle_object(self,req):
+
+        """
+            Received a request (2D position), sleep for a random number fo seconds
+            and reply with "arrvied"
+
+            @param req: requested data
+            @type req: TargetPosResponse
+        """
+        
+        resp = DetectImageResponse()
+        resp.object = str(self.ic.getCenter())+" "+str(self.ic.getRadius())
+        return resp
 
 
 def main(args):
     '''Initializes and cleanup ros node'''
-    ic = image_feature()
+    c = client_handler()
     try:
         rospy.spin()
     except KeyboardInterrupt:

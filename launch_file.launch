@@ -1,8 +1,8 @@
 <launch>
 
     <!-- Home position (must be inside the map) -->
-    <param name="home_pos_x" type="int" value="-6" />
-    <param name="home_pos_y" type="int" value="5" />
+    <param name="home_pos_x" type="int" value="-8" />
+    <param name="home_pos_y" type="int" value="2" />
 
     <!-- Min and max delay for sending command -->
     <param name="min_delay_command" type="double" value="1" />

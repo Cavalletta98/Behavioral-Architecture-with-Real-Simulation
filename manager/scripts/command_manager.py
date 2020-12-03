@@ -202,8 +202,9 @@ class normal(smach.State):
         # Sends the goal to the action server.
         client.send_goal(goal.goal)
 
-        # Waits for the server to finish performing the action.
-        client.wait_for_result()
+        while(client.get_state() != 3):
+            resp = self.object_detector_client()
+            rospy.loginfo(resp)
 
         # Prints out the result of executing the action
         return client.get_result()
@@ -225,7 +226,7 @@ class normal(smach.State):
 
         for count in range(0,count_value):
             resp = self.object_detector_client()
-            rospy.loginfo(resp)       
+            rospy.loginfo(resp)           
             x = random.uniform(neg_map_x,map_x)
             y = random.uniform(neg_map_y,map_y)
             result = self.target_pos_client(x,y)
