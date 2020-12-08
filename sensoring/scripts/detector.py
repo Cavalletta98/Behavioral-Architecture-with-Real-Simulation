@@ -21,8 +21,6 @@ import rospy
 from sensor_msgs.msg import CompressedImage
 from sensoring.srv import DetectImage,DetectImageResponse
 
-global resp_center,resp_radius
-
 VERBOSE = False
 
 class image_feature:
@@ -83,11 +81,9 @@ class image_feature:
                 cv2.circle(image_np, (int(x), int(y)), int(radius),
                            (0, 255, 255), 2)
                 cv2.circle(image_np, center, 5, (0, 0, 255), -1)
-                self.resp_center = center[0]
-                self.resp_radius = radius
-            else:
-                self.resp_center = -1
-                self.resp_radius = -1
+
+            self.resp_center = center[0]
+            self.resp_radius = radius
 
         else:
             self.resp_center = -1

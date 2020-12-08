@@ -12,10 +12,12 @@ import smach
 import smach_ros
 import time
 import random
-from geometry_msgs.msg import Point,PoseStamped
+from geometry_msgs.msg import Point
 import actionlib
 from robot_control.msg import RobotPlanningAction, RobotPlanningActionGoal
 from sensoring.srv import DetectImage
+from geometry_msgs.msg import Twist
+from std_msgs.msg import Float64
 
 ## Min delay for transition between NORMAL and SLEEP states
 min_transition_normal_sleep = rospy.get_param("min_transition_normal_sleep")
@@ -37,6 +39,88 @@ map_x = rospy.get_param("map_x")
 ## y coordinate of the map
 map_y = rospy.get_param("map_y")
 
+# define state Play
+class play(smach.State):
+
+
+    def __init__(self):
+        # initialisation function, it should not wait
+
+        """
+            Constrcutor. It inizializes the attribute
+        """
+        smach.State.__init__(self,outcomes=['someTimes'])
+        self.vel_pub = rospy.Publisher('/robot/cmd_vel', Twist, queue_size=1)
+        self.head_pub = rospy.Publisher('/myrobot/head_joint_position_controller/command', Float64, queue_size=1)
+
+    def object_detector_client(self):
+
+        """
+            Makes a request to motion server using the target position (x,y) 
+            and wait for the response
+
+            @param x: x coordinate of the target position
+            @type x: int
+            @param y: y coordinate of the target position
+            @type y: int
+
+        """
+
+        rospy.wait_for_service('detect_image')
+        try:
+            detect_obj_serv = rospy.ServiceProxy('detect_image', DetectImage)
+            resp = detect_obj_serv()
+            return resp
+        except rospy.ServiceException as e:
+            rospy.logerr("Service call failed: %s",e)
+    
+   
+    def execute(self, userdata):
+
+        rospy.loginfo('Executing state PLAY')
+        
+        count = 0
+        transition_value = random.randint(1,30)
+        
+        while (1):
+            resp = self.object_detector_client()
+            ball = resp.object.split()
+            center = float(ball[0])
+            radius = float(ball[1])
+            
+            if ((center == -1) and (radius == -1)):
+                count += 1
+                if(count == transition_value):
+                    return 'someTimes'
+            elif(radius > 10):
+                count = 0
+                vel = Twist()
+                vel.angular.z = 0.002*(center-400)
+                vel.linear.x = -0.01*(radius-110)
+                if(100-radius <= 0):
+                    vel.angular.z = 0
+                    vel.linear.x = 0
+                    self.vel_pub.publish(vel)
+                    head_angle = Float64()
+                    head_angle.data = 0.78
+                    self.head_pub.publish(head_angle)
+                    time.sleep(10)
+                    head_angle.data = -1.57
+                    self.head_pub.publish(head_angle)
+                    time.sleep(10)
+                    head_angle.data = 0
+                    self.head_pub.publish(head_angle)
+                    time.sleep(5)
+
+                else:
+                    self.vel_pub.publish(vel)
+            elif(radius < 10):
+                count = 0
+                vel = Twist()
+                vel.linear.x = 0.5
+                self.vel_pub.publish(vel)
+
+                           
 # define state Sleep
 class sleep(smach.State):
 
@@ -47,11 +131,7 @@ class sleep(smach.State):
         Methods
         -----
         target_pos_client(x, y):
-            Makes a request to motion server using the target position (x,y) 
-            and wait for the response
-        getFeedback(data)
-            Callback method that received the "arrived" message,waits for a random number of
-            seconds and set the attribute arrived to 1
+            Send a goal to the action server of the robot and waits until it reaches the goal.
         execute()
             It publishes the home position and, after the robot reaches the position, it
             changes the state to NORMAL
@@ -69,13 +149,15 @@ class sleep(smach.State):
     def target_pos_client(self,x, y):
 
         """
-            Makes a request to motion server using the target position (x,y) 
-            and wait for the response
+            Send a goal to the action server of the robot and waits until it reaches the goal.
 
             @param x: x coordinate of the target position
             @type x: int
             @param y: y coordinate of the target position
             @type y: int
+
+            @returns: the position reached by the robot
+            @rtype: Pose
 
         """
         client = actionlib.SimpleActionClient('/robot_reaching_goal', RobotPlanningAction)
@@ -102,7 +184,7 @@ class sleep(smach.State):
     def execute(self, userdata):
 
         """
-            It publishes the home position and, after the robot reaches the position, it
+            It sends ad goal the home position and, after the robot reaches the position, it
             changes the state to NORMAL
 
             @param userdata: used to pass data between states
@@ -127,44 +209,34 @@ class normal(smach.State):
         A class used to represent the NORMAL behaviour
         of the robot
 
-        Attributes
-        -----
-        @param play: variable that will be set to 1 when the command "play" arrives
-        @type play: int
-
         Methods
         -----
-        target_pos_client(x, y):
-            Makes a request to motion server using the target position (x,y) 
-            and wait for the response
-        getFeedback(data)
-            Callback method that received the "arrived" message and set the attribute
-            arrived to 1
-        getCommand(data)
-            Callback method that sets the attribute play to 1
+        object_detector_client():
+            Makes a request to detector server and wait for the response
+        target_pos_client(x,y)
+            Send a goal to the action server of the robot and waits until it reaches the goal.
+            While it is waiting, if there is the ball, it stops the robot and return None
         execute()
-            It publishes a random position and, after the robot reaches the position, it
-            checks if it necessary to change state (PLAY) or not
+            It checks if there is the ball, otherwise it will generate a random goal (x and y)
+            for the robot. If there is the ball, it switches to the PLAY state.
+            After some times, it switches to the SLEEP state
     """
 
     def __init__(self):
 
         """
-            Constrcutor. It subscribes to "command" topic
+            Constrcutor
         """
 
-        smach.State.__init__(self,outcomes=['someTimes'])
+        smach.State.__init__(self,outcomes=['someTimes','ball'])
     
     def object_detector_client(self):
 
         """
-            Makes a request to motion server using the target position (x,y) 
-            and wait for the response
+            Makes a request to detector server and wait for the response
 
-            @param x: x coordinate of the target position
-            @type x: int
-            @param y: y coordinate of the target position
-            @type y: int
+            @returns: radius and center of the ball
+            @rtyper: stringS
 
         """
 
@@ -179,13 +251,16 @@ class normal(smach.State):
     def target_pos_client(self,x, y):
 
         """
-            Makes a request to motion server using the target position (x,y) 
-            and wait for the response
+            Send a goal to the action server of the robot and waits until it reaches the goal.
+            While it is waiting, if there is the ball, it stops the robot and return None
 
             @param x: x coordinate of the target position
             @type x: int
             @param y: y coordinate of the target position
             @type y: int
+
+            @returns: the position reached by the robot or None
+            @rtype: Pose
 
         """
         client = actionlib.SimpleActionClient('/robot_reaching_goal', RobotPlanningAction)
@@ -204,7 +279,12 @@ class normal(smach.State):
 
         while(client.get_state() != 3):
             resp = self.object_detector_client()
-            rospy.loginfo(resp)
+            ball = resp.object.split()
+            center = float(ball[0])
+            radius = float(ball[1])
+            if ((center != -1) and (radius != -1)):
+                client.cancel_all_goals()
+                return None
 
         # Prints out the result of executing the action
         return client.get_result()
@@ -212,8 +292,9 @@ class normal(smach.State):
     def execute(self, userdata):
 
         """
-            It publishes a random position and, after the robot reaches the position, it
-            checks if it necessary to change state (PLAY) or not
+            It checks if there is the ball, otherwise it will generate a random goal (x and y)
+            for the robot. If there is the ball, it switches to the PLAY state.
+            After some times, it switches to the SLEEP state
 
             @param userdata: used to pass data between states
             @type userdata: list
@@ -226,11 +307,18 @@ class normal(smach.State):
 
         for count in range(0,count_value):
             resp = self.object_detector_client()
-            rospy.loginfo(resp)           
+            ball = resp.object.split()
+            center = float(ball[0])
+            radius = float(ball[1])
+            if ((center != -1) and (radius != -1)):
+                return 'ball'    
             x = random.uniform(neg_map_x,map_x)
             y = random.uniform(neg_map_y,map_y)
             result = self.target_pos_client(x,y)
-            rospy.loginfo("Robot arrived in (%lf,%lf)",result.position.position.x,result.position.position.y)
+            if (result != None):
+                rospy.loginfo("Robot arrived in (%lf,%lf)",result.position.position.x,result.position.position.y)
+            else:
+                return 'ball'
 
         return 'someTimes'
 
@@ -252,11 +340,12 @@ def main():
     with sm:
         # Add states to the container
         smach.StateMachine.add('NORMAL', normal(), 
-                               transitions={'someTimes':'SLEEP'})
+                               transitions={'ball':'PLAY', 
+                                            'someTimes':'SLEEP'})
         smach.StateMachine.add('SLEEP', sleep(), 
                                transitions={'wakeUp':'NORMAL'})
-        #smach.StateMachine.add('PLAY', play(), 
-                               #transitions={'someTimes':'NORMAL'})
+        smach.StateMachine.add('PLAY', play(), 
+                               transitions={'someTimes':'NORMAL'})
         
     # Create and start the introspection server for visualization
     sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')

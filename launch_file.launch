@@ -36,5 +36,6 @@
     <node name="motion_server" pkg="robot_control" type="go_to_point_robot.py" respawn="true"/>
     <node name="image_detector" pkg="sensoring" type="detector.py" respawn="true" output="screen"/>
     <node name="command_manager_state_machine" pkg="manager" type="command_manager.py" respawn="true" output="screen"/>
+    <node name="command" pkg="sensoring" type="command.py" respawn="true"/>
 
 </launch>
