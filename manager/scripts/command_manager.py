@@ -12,18 +12,25 @@ import smach
 import smach_ros
 import time
 import random
-from geometry_msgs.msg import Point
 import actionlib
+
 from robot_control.msg import RobotPlanningAction, RobotPlanningActionGoal
 from sensoring.srv import DetectImage
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64
+from geometry_msgs.msg import Point
 
 ## Min delay for transition between NORMAL and SLEEP states
 min_transition_normal_sleep = rospy.get_param("min_transition_normal_sleep")
 
 ## Max delay for transition between NORMAL and SLEEP states
 max_transition_normal_sleep = rospy.get_param("max_transition_normal_sleep")
+
+## Min delay for transition between NORMAL and SLEEP states
+min_transition_play_normal = rospy.get_param("min_transition_play_normal")
+
+## Max delay for transition between NORMAL and SLEEP states
+max_transition_play_normal = rospy.get_param("max_transition_play_normal")
 
 ## 2D home position
 home_pos = Point(rospy.get_param("home_pos_x"),rospy.get_param("home_pos_y"),0)
@@ -80,7 +87,7 @@ class play(smach.State):
         rospy.loginfo('Executing state PLAY')
         
         count = 0
-        transition_value = random.randint(1,30)
+        transition_value = random.randint(min_transition_play_normal,max_transition_play_normal)
         
         while (1):
             resp = self.object_detector_client()

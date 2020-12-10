@@ -1,23 +1,19 @@
 #!/usr/bin/env python3
 
-# Python libs
+"""
+    ROS node that implement a ball detector
+"""
+
+# Import of libraries
 import sys
 import time
-
-# numpy and scipy
 import numpy as np
 from scipy.ndimage import filters
-
 import imutils
-
-# OpenCV
 import cv2
-
-# Ros libraries
 import roslib
 import rospy
 
-# Ros Messages
 from sensor_msgs.msg import CompressedImage
 from sensoring.srv import DetectImage,DetectImageResponse
 
@@ -25,25 +21,72 @@ VERBOSE = False
 
 class image_feature:
 
+    """
+        A class used to detect a green ball
+
+        Attributes
+        -----
+        @param subscriber: variable that represents a subscriber to the camera topic
+        @type subscriber: Subscriber
+
+        @param resp_center: center of the ball
+        @type resp_center: int
+
+        @param resp_radius: radius of the ball
+        @type resp_radius: int
+
+        Methods
+        -----
+        getCenter():
+            Get the center of the ball
+        getRadius()
+            Get the radius of the ball
+        callback(ros_data)
+            Callback function of subscribed topic. 
+            Here images get converted and features detected
+    """
+
     def __init__(self):
-        '''Initialize ros publisher, ros subscriber'''
+
+        '''
+            Constuctor. Initialize the node and the attributes, subscribe to topic of the camera
+        '''
+
         rospy.init_node('image_detector', anonymous=True)
-        
-        # subscribed Topic
-        
+                
         self.subscriber = rospy.Subscriber("/robot/camera1/image_raw/compressed",CompressedImage, self.callback,  queue_size=1)
         self.resp_center = -1
         self.resp_radius = -1
 
     def getCenter(self):
+
+        '''
+            Get the center of the ball
+
+            @returns: center of the ball
+            @rtype: int
+        '''
+
         return self.resp_center
 
     def getRadius(self):
+
+        '''
+            Get the radius of the ball
+
+            @returns: radius of the ball
+            @rtype: int
+        '''
+
         return self.resp_radius
 
     def callback(self, ros_data):
-        '''Callback function of subscribed topic. 
-        Here images get converted and features detected'''
+        
+        '''
+            Callback function of subscribed topic. 
+            Here images get converted and features detected
+        '''
+
         if VERBOSE:
             print ('received image of type: "%s"' % ros_data.format)
 
@@ -91,26 +134,49 @@ class image_feature:
 
         cv2.imshow('window', image_np)
         cv2.waitKey(2)
-        #self.subscriber.unregister()
 
 class client_handler:
 
+    """
+        A class used to represent a service for providing the radius
+        and center of the ball
+
+        Attributes
+        -----
+        @param ic: istance of class image_feature
+        @type ic: image_feature
+
+        @param s: service object
+        @type s: Service
+
+        Methods
+        -----
+        handle_object(req):
+            Received a request and reply with the center and radius
+            of the ball        
+    """
+
     def __init__(self):
-        '''Initialize ros publisher, ros subscriber'''
+
+        '''
+            Constuctor. Initialize the node and service, create an instance of the class
+            image_feature
+        '''
+
         rospy.init_node('image_detector', anonymous=True)
-        
-        # subscribed Topic
+
         self.ic = image_feature()
         self.s = rospy.Service('detect_image', DetectImage, self.handle_object)
 
     def handle_object(self,req):
 
         """
-            Received a request (2D position), sleep for a random number fo seconds
-            and reply with "arrvied"
+            Received a request and reply with the center and radius
+            of the ball
 
-            @param req: requested data
-            @type req: TargetPosResponse
+            @returns: radius and center of the ball
+            @rtype: DetectImageResponse
+
         """
         
         resp = DetectImageResponse()
@@ -119,14 +185,15 @@ class client_handler:
 
 
 def main(args):
-    '''Initializes and cleanup ros node'''
+    '''
+        Main function.Starting the nodes
+    '''
     c = client_handler()
     try:
         rospy.spin()
     except KeyboardInterrupt:
         print ("Shutting down ROS Image feature detector module")
     cv2.destroyAllWindows()
-
 
 if __name__ == '__main__':
     main(sys.argv)

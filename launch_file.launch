@@ -1,20 +1,16 @@
 <launch>
 
     <!-- Home position (must be inside the map) -->
-    <param name="home_pos_x" type="int" value="-8" />
+    <param name="home_pos_x" type="int" value="-7" />
     <param name="home_pos_y" type="int" value="2" />
 
     <!-- Min and max delay for sending command -->
     <param name="min_delay_command" type="double" value="1" />
     <param name="max_delay_command" type="double" value="10" />
 
-    <!-- Min and max delay for simulating robot motion -->
-    <param name="min_delay_robot_motion" type="double" value="0.1" />
-    <param name="max_delay_robot_motion" type="double" value="1" />
-
     <!-- Min and max delay for transition between PLAY and NORMAL states -->
     <param name="min_transition_play_normal" type="int" value="1" />
-    <param name="max_transition_play_normal" type="int" value="10" />
+    <param name="max_transition_play_normal" type="int" value="40" />
 
     <!-- Min and max delay for transition between NORMAL and SLEEP states -->
     <param name="min_transition_normal_sleep" type="int" value="1" />
@@ -24,14 +20,15 @@
     <param name="min_sleep_delay" type="double" value="1" />
     <param name="max_sleep_delay" type="double" value="10" />
 
-    <!-- Person position (must be inside the map) -->
-    <param name="person_pos_x" type="int" value="8" />
-    <param name="person_pos_y" type="int" value="10" />
+    <!-- Min and max delay for disappearing the ball -->
+    <param name="min_dis_ball_delay" type="int" value="1" />
+    <param name="max_dis_ball_delay" type="int" value="10" />
 
     <!-- Map dimension -->
     <param name="map_x" type="int" value="7" />
     <param name="map_y" type="int" value="7" />
 
+    <!-- Launch the simulation and the nodes-->
     <include file="$(find simulation)/launch/gazebo_world.launch" />
     <node name="motion_server" pkg="robot_control" type="go_to_point_robot.py" respawn="true"/>
     <node name="image_detector" pkg="sensoring" type="detector.py" respawn="true" output="screen"/>
