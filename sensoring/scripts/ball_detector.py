@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-    ROS node that implement a ball detector
+    ROS component that implement a ball detector
 """
 
 # Import of libraries
@@ -53,9 +53,14 @@ class image_feature:
         '''
 
         rospy.init_node('image_detector', anonymous=True)
-                
+
+        ## ROS Subsriber object for getting the images  
         self.subscriber = rospy.Subscriber("/robot/camera1/image_raw/compressed",CompressedImage, self.callback,  queue_size=1)
+
+        ## Center of the ball
         self.resp_center = -1
+
+        ## Radius of the ball
         self.resp_radius = -1
 
     def getCenter(self):
@@ -83,8 +88,8 @@ class image_feature:
     def callback(self, ros_data):
         
         '''
-            Callback function of subscribed topic. 
-            Here images get converted and features detected
+            Callback function for converting the images and
+            detecting the features
         '''
 
         if VERBOSE:
@@ -135,7 +140,7 @@ class image_feature:
         cv2.imshow('window', image_np)
         cv2.waitKey(2)
 
-class client_handler:
+class ball_info:
 
     """
         A class used to represent a service for providing the radius
@@ -165,7 +170,10 @@ class client_handler:
 
         rospy.init_node('image_detector', anonymous=True)
 
+        ## Image feature object
         self.ic = image_feature()
+
+        ## ROS service object
         self.s = rospy.Service('detect_image', DetectImage, self.handle_object)
 
     def handle_object(self,req):
@@ -188,7 +196,7 @@ def main(args):
     '''
         Main function.Starting the nodes
     '''
-    c = client_handler()
+    c = ball_info()
     try:
         rospy.spin()
     except KeyboardInterrupt:

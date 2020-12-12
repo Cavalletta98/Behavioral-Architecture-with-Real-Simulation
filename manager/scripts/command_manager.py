@@ -49,6 +49,28 @@ map_y = rospy.get_param("map_y")
 # define state Play
 class play(smach.State):
 
+    """
+        A class used to represent the PLAY behaviour
+        of the robot
+
+        Attributes
+        -----
+        @param vel_pub: variable that represents a publisher for the robot velocities
+        @type vel_pub: Publisher
+
+        @param head_pub: variable that represents a publisher for controlling the head of the robot
+        @type head_pub: Publisher
+
+        Methods
+        -----
+        object_detector_client():
+            Makes a request to detector server and wait for the response
+        execute()
+            It checks if there is the ball, otherwise it will generate a random goal (x and y)
+            for the robot. If there is the ball, it switches to the PLAY state.
+            After some times, it switches to the SLEEP state
+    """
+
 
     def __init__(self):
         # initialisation function, it should not wait
@@ -57,20 +79,19 @@ class play(smach.State):
             Constrcutor. It inizializes the attribute
         """
         smach.State.__init__(self,outcomes=['someTimes'])
+        ## ROS Publisher object for controlling robot velocities
         self.vel_pub = rospy.Publisher('/robot/cmd_vel', Twist, queue_size=1)
+
+        ## ROS Publisher object for controlling the head of the robot
         self.head_pub = rospy.Publisher('/myrobot/head_joint_position_controller/command', Float64, queue_size=1)
 
     def object_detector_client(self):
 
         """
-            Makes a request to motion server using the target position (x,y) 
-            and wait for the response
+            Makes a request to detector server and wait for the response
 
-            @param x: x coordinate of the target position
-            @type x: int
-            @param y: y coordinate of the target position
-            @type y: int
-
+            @returns: radius and center of the ball
+            @rtyper: String
         """
 
         rospy.wait_for_service('detect_image')
@@ -140,8 +161,8 @@ class sleep(smach.State):
         target_pos_client(x, y):
             Send a goal to the action server of the robot and waits until it reaches the goal.
         execute()
-            It publishes the home position and, after the robot reaches the position, it
-            changes the state to NORMAL
+            It send the robot to the home position and, after the robot reaches the position,
+            sleeps for a random time of seconds. After that change the state to NORMAL
     """
 
     def __init__(self):
@@ -191,11 +212,14 @@ class sleep(smach.State):
     def execute(self, userdata):
 
         """
-            It sends ad goal the home position and, after the robot reaches the position, it
-            changes the state to NORMAL
+            It send the robot to the home position and, after the robot reaches the position,
+            sleeps for a random time of seconds. After that change the state to NORMAL
 
             @param userdata: used to pass data between states
             @type userdata: list
+
+            @returns: transition value
+            @rtype: String
         """
 
         # function called when exiting from the node, it can be blacking
@@ -243,7 +267,7 @@ class normal(smach.State):
             Makes a request to detector server and wait for the response
 
             @returns: radius and center of the ball
-            @rtyper: stringS
+            @rtyper: string
 
         """
 
@@ -305,6 +329,9 @@ class normal(smach.State):
 
             @param userdata: used to pass data between states
             @type userdata: list
+
+            @returns: transition value
+            @rtype: String
         """
         rospy.loginfo('Executing state NORMAL')
 

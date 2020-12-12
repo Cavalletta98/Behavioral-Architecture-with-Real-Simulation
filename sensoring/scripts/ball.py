@@ -25,14 +25,14 @@ map_x = rospy.get_param("map_x")
 ## y coordinate of the map
 map_y = rospy.get_param("map_y")
 
-def command_generator():
+def ball():
 
     """
         Main function that moves the ball randomly
         into the arena
     """
 
-    rospy.init_node('command_node', anonymous=True)
+    rospy.init_node('ball_node', anonymous=True)
 
     disappear_ball = random.randint(min_dis_ball_delay,max_dis_ball_delay)
     count_ball = 0
@@ -70,6 +70,6 @@ def command_generator():
 
 if __name__ == '__main__':
     try:
-        command_generator()
+        ball()
     except rospy.ROSInterruptException:
         pass

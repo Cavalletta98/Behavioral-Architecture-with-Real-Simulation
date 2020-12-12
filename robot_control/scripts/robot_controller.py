@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
-# import ros stuff
+"""
+    ROS action server that moves the robot
+    toward a target position
+"""
+
+# Import of libraries
 import rospy
 from geometry_msgs.msg import Twist, Point, Pose
 from nav_msgs.msg import Odometry
@@ -10,16 +15,19 @@ import actionlib
 import actionlib.msg
 import robot_control.msg
 
-# robot state variables
+## Robot state variables
 position_ = Point()
 pose_ = Pose()
 yaw_ = 0
-# machine state
+
+## Machine state
 state_ = 0
-# goal
+
+## Goal position
 desired_position_ = Point()
 desired_position_.z = 0
-# parameters
+
+## Parameters
 yaw_precision_ = math.pi / 9  # +/- 20 degree allowed
 yaw_precision_2_ = math.pi / 90  # +/- 2 degree allowed
 dist_precision_ = 0.1
@@ -29,16 +37,22 @@ ub_a = 0.6
 lb_a = -0.5
 ub_d = 0.6
 
-# publisher
+## ROS publisher object
 pub = None
 
-# action_server
+## ROS action server object
 act_s = None
 
-# callbacks
-
-
 def clbk_odom(msg):
+
+    '''
+        Callback function to obtain the odometry information
+        from the robot
+
+        @param msg: robot state
+        @type msg: Odometry
+    '''
+
     global position_
     global pose_
     global yaw_
@@ -58,18 +72,46 @@ def clbk_odom(msg):
 
 
 def change_state(state):
+
+    '''
+        Function to change the state of the machine
+
+        @param state: next state of the machine
+        @type state: Int
+    '''
+
     global state_
     state_ = state
     print ('State changed to [%s]' % state_)
 
 
 def normalize_angle(angle):
+
+    '''
+        Function for normalizing the angle
+
+        @param angle: error on the yaw
+        @type angle: Float
+
+        @returns: normalized error on the yaw
+        @rtype: Float
+    '''
+
     if(math.fabs(angle) > math.pi):
         angle = angle - (2 * math.pi * angle) / (math.fabs(angle))
     return angle
 
 
 def fix_yaw(des_pos):
+
+    '''
+        Function to rotate the robot toward the
+        target position
+
+        @param des_pos: robot target position
+        @type des_pos: Point
+    '''
+
     global yaw_, pub, yaw_precision_2_, state_
     desired_yaw = math.atan2(des_pos.y - position_.y, des_pos.x - position_.x)
     err_yaw = normalize_angle(desired_yaw - yaw_)
@@ -92,6 +134,14 @@ def fix_yaw(des_pos):
 
 
 def go_straight_ahead(des_pos):
+
+    '''
+        Function to move the robot straight ahead
+
+        @param des_pos: robot target position
+        @type des_pos: Point
+    '''
+
     global yaw_, pub, yaw_precision_, state_
     desired_yaw = math.atan2(des_pos.y - position_.y, des_pos.x - position_.x)
     err_yaw = desired_yaw - yaw_
@@ -119,6 +169,12 @@ def go_straight_ahead(des_pos):
 
 
 def done():
+
+    '''
+        Function used to stop the robot when it
+        reaches the target position
+    '''
+
     twist_msg = Twist()
     twist_msg.linear.x = 0
     twist_msg.angular.z = 0
@@ -126,6 +182,15 @@ def done():
 
 
 def planning(goal):
+
+    '''
+        Implement action server through a state machine that 
+        initially rotatethe robot toward the goal position 
+        and then move it
+
+        @param goal: robot target position
+        @type goal: PoseStamped
+    '''
 
     global state_, desired_position_
     global act_s
@@ -173,6 +238,12 @@ def planning(goal):
 
 
 def main():
+
+    '''
+        Main function. Start the node and subscribe to topic "/robot/odom".
+        Start the action server
+    '''
+
     global pub, active_, act_s
 
     rospy.init_node('go_to_point')

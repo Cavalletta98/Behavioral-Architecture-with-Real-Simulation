@@ -1,25 +1,28 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_xacro">
 <xacro:include filename="$(find simulation)/urdf/robot.gazebo"/>
-					
+
+  <!-- Wheels properties -->				
 	<xacro:property name="length_wheel" value="0.04" />
 	<xacro:property name="radius_wheel" value="0.1" />
 
+  <!-- Inertia -->
 	<xacro:macro name="default_inertial" params="mass">
-               <inertial>
-                       <mass value="${mass}" />
-                       <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
-                       <inertia ixx="0.000526666666667" ixy="0" ixz="0" iyy="0.000526666666667" iyz="0" izz="0.001"/>
-               </inertial>
+  <inertial>
+    <mass value="${mass}" />
+    <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+    <inertia ixx="0.000526666666667" ixy="0" ixz="0" iyy="0.000526666666667" iyz="0" izz="0.001"/>
+  </inertial>
 	</xacro:macro>
 
-    <xacro:macro name="wheel_geometry">
-		<geometry>
-       			<cylinder length="${length_wheel}" radius="${radius_wheel}"/>
-     	</geometry>
-	</xacro:macro>
+  <!-- Wheels geometry -->
+  <xacro:macro name="wheel_geometry">
+    <geometry>
+      <cylinder length="${length_wheel}" radius="${radius_wheel}"/>
+    </geometry>
+  </xacro:macro>
 	
-	
+	<!-- Materials -->
   <material name="black">
     <color rgba="0.0 0.0 0.0 1.0"/>
   </material>
@@ -45,6 +48,7 @@
     <color rgba="1.0 1.0 1.0 1.0"/>
   </material>
 
+<!-- Chassis link -->
 <link name="link_chassis">
   <!-- pose and inertial -->
   <pose>0 0 0.1 0 0 0</pose>
@@ -81,6 +85,7 @@
   </visual>
 </link>
 
+<!-- Right wheel link -->
 <link name="link_right_wheel">
   <xacro:default_inertial mass="0.2"/>
   <collision name="link_right_wheel_collision">
@@ -94,6 +99,7 @@
   </visual>
 </link>
 
+<!-- Left wheel link -->
 <link name="link_left_wheel">
   <xacro:default_inertial mass="0.2"/>
   <collision name="link_left_wheel_collision">
@@ -107,6 +113,7 @@
   </visual>
 </link>
 
+<!-- Neck link -->
 <link name="link_neck">
   <xacro:default_inertial mass="0.2"/>
   <collision name="link_neck_collision">
@@ -124,6 +131,7 @@
   </visual>
 </link>
 
+<!-- Head link -->
 <link name="link_head">
   <xacro:default_inertial mass="0.2"/>
   <collision name="link_head_collision">
@@ -141,6 +149,7 @@
   </visual>
 </link>
 
+  <!-- Right wheel joint -->
   <joint name="joint_right_wheel" type="continuous">
     <origin rpy="0 0 0" xyz="-0.05 0.15 0"/>
     <child link="link_right_wheel"/>
@@ -150,7 +159,7 @@
     <joint_properties damping="1.0" friction="1.0"/>
   </joint>
   
-  
+  <!-- Left wheel joint -->
   <joint name="joint_left_wheel" type="continuous">
     <origin rpy="0 0 0" xyz="-0.05 -0.15 0"/>
     <child link="link_left_wheel"/>
@@ -160,6 +169,7 @@
     <joint_properties damping="1.0" friction="1.0"/>
   </joint>
 
+  <!-- Neck joint -->
   <joint name="neck_joint" type="fixed">
 	    <axis xyz="0 1 0" />
 	    <origin xyz="0.23 0 0.0" rpy="0 0 0"/>
@@ -167,6 +177,7 @@
 	    <child link="link_neck"/> 
 	 </joint>
 
+  <!-- Head joint -->
    <joint name="head_joint" type="revolute">
 	    <axis xyz="0 0 1" />
 	    <origin xyz="0 0 0.08" rpy="0 0 0"/>
@@ -176,6 +187,7 @@
 	    <child link="link_head"/> 
 	 </joint>
 
+  <!-- Transmission for head joint (used to control the joint) -->
   <transmission name="head_joint_tran">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="head_joint">
@@ -187,7 +199,7 @@
     </actuator>
   </transmission>
 
-
+  <!-- Camera link -->
  <link name="camera_link"> ->
 	    <collision>
 	      <origin xyz="0 0 0.025" rpy="0 0 0"/>
@@ -211,6 +223,7 @@
 	    </inertial> 
   </link>
   
+  <!-- Camera joint -->
   <joint name="camera_joint" type="fixed">
 	    <axis xyz="0 1 0" />
 	    <origin xyz="0 0 0.1" rpy="0 0 0"/>
