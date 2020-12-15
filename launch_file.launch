@@ -20,6 +20,18 @@
     <param name="min_sleep_delay" type="double" value="1" />
     <param name="max_sleep_delay" type="double" value="10" />
 
+    <!-- Min and max delay for mantaining 45° clockwise the head -->
+    <param name="min_clock_head_delay" type="double" value="1" />
+    <param name="max_clock_head_delay" type="double" value="10" />
+
+    <!-- Min and max delay for mantaining 45° counterclockwise the head -->
+    <param name="min_countclock_head_delay" type="double" value="1" />
+    <param name="max_countclock_head_delay" type="double" value="10" />
+
+    <!-- Min and max delay for mantaining 0° the head -->
+    <param name="min_head_delay" type="double" value="1" />
+    <param name="max_head_delay" type="double" value="10" />
+
     <!-- Min and max delay for disappearing the ball -->
     <param name="min_dis_ball_delay" type="int" value="1" />
     <param name="max_dis_ball_delay" type="int" value="10" />

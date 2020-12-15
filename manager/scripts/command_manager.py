@@ -19,6 +19,7 @@ from sensoring.srv import DetectImage
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Point
+from control_msgs.msg import JointControllerState
 
 ## Min delay for transition between NORMAL and SLEEP states
 min_transition_normal_sleep = rospy.get_param("min_transition_normal_sleep")
@@ -40,6 +41,24 @@ min_sleep_delay = rospy.get_param("min_sleep_delay")
 
 ## Max delay for SLEEP state
 max_sleep_delay = rospy.get_param("max_sleep_delay")
+
+## Min delay for mantaining 45° clockwise the head
+min_clock_head_delay = rospy.get_param("min_clock_head_delay")
+
+## Max delay for mantaining 45° clockwise the head
+max_clock_head_delay = rospy.get_param("max_clock_head_delay")
+
+## Min delay for mantaining 45° counterclockwise the head
+min_countclock_head_delay = rospy.get_param("min_countclock_head_delay")
+
+## Max delay for mantaining 45° counterclockwise the head
+max_countclock_head_delay = rospy.get_param("max_countclock_head_delay")
+
+## Min delay for mantaining 0° the head
+min_head_delay = rospy.get_param("min_head_delay")
+
+## Max delay for mantaining 0° the head
+max_head_delay = rospy.get_param("max_head_delay")
 
 ## x coordinate of the map
 map_x = rospy.get_param("map_x")
@@ -85,6 +104,10 @@ class play(smach.State):
         ## ROS Publisher object for controlling the head of the robot
         self.head_pub = rospy.Publisher('/myrobot/head_joint_position_controller/command', Float64, queue_size=1)
 
+    def jointState(self,data):
+        if(data.process_value >= data.set_point):
+            self.joint_state.unregister()
+
     def object_detector_client(self):
 
         """
@@ -129,16 +152,22 @@ class play(smach.State):
                     vel.angular.z = 0
                     vel.linear.x = 0
                     self.vel_pub.publish(vel)
+
                     head_angle = Float64()
                     head_angle.data = 0.78
                     self.head_pub.publish(head_angle)
-                    time.sleep(10)
-                    head_angle.data = -1.57
+                    self.joint_state = rospy.Subscriber('/myrobot/head_joint_position_controller/state',JointControllerState,self.jointState,queue_size=1)
+                    time.sleep(random.uniform(min_sleep_delay,max_sleep_delay))
+
+                    head_angle.data = -0.78
                     self.head_pub.publish(head_angle)
-                    time.sleep(10)
+                    self.joint_state = rospy.Subscriber('/myrobot/head_joint_position_controller/state',JointControllerState,self.jointState,queue_size=1)
+                    time.sleep(random.uniform(min_countclock_head_delay,max_countclock_head_delay))
+                    
                     head_angle.data = 0
                     self.head_pub.publish(head_angle)
-                    time.sleep(5)
+                    self.joint_state = rospy.Subscriber('/myrobot/head_joint_position_controller/state',JointControllerState,self.jointState,queue_size=1)
+                    time.sleep(random.uniform(min_head_delay,max_head_delay))
 
                 else:
                     self.vel_pub.publish(vel)
@@ -327,7 +356,7 @@ class normal(smach.State):
             for the robot. If there is the ball, it switches to the PLAY state.
             After some times, it switches to the SLEEP state
 
-            @param userdata: used to pass data between states
+            @param userdata: used to pass data bejoint_state = tween states
             @type userdata: list
 
             @returns: transition value
