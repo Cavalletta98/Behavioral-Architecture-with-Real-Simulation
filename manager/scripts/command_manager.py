@@ -84,10 +84,12 @@ class play(smach.State):
         -----
         object_detector_client():
             Makes a request to detector server and wait for the response
+        jointState(data)
+            Get the head joint state in order to check if it is reached the desired angle
         execute()
-            It checks if there is the ball, otherwise it will generate a random goal (x and y)
-            for the robot. If there is the ball, it switches to the PLAY state.
-            After some times, it switches to the SLEEP state
+            It checks if there is the ball.If there is the ball, it moves the robot toward the ball and if the
+            robot reaches the ball, it starts to move the head 45° to the left, 45° to the right and back to
+            the 0 position. After some times the robot doesen't see the ball, it switches to the NORMAL state
     """
 
 
@@ -105,6 +107,11 @@ class play(smach.State):
         self.head_pub = rospy.Publisher('/myrobot/head_joint_position_controller/command', Float64, queue_size=1)
 
     def jointState(self,data):
+
+        '''
+            Get the head joint state in order to check if it is reached the desired angle
+        '''
+
         if(data.process_value >= data.set_point):
             self.joint_state.unregister()
 
@@ -128,6 +135,12 @@ class play(smach.State):
    
     def execute(self, userdata):
 
+        '''
+            It checks if there is the ball.If there is the ball, it moves the robot toward the ball and if the
+            robot reaches the ball, it starts to move the head 45° to the left, 45° to the right and back to
+            the 0 position. After some times the robot doesen't see the ball, it switches to the NORMAL state
+        '''
+
         rospy.loginfo('Executing state PLAY')
         
         count = 0
@@ -146,8 +159,8 @@ class play(smach.State):
             elif(radius > 10):
                 count = 0
                 vel = Twist()
-                vel.angular.z = 0.002*(center-400)
-                vel.linear.x = -0.01*(radius-110)
+                vel.angular.z = 0.003*(center-400)
+                vel.linear.x = -0.007*(radius-110)
                 if(100-radius <= 0):
                     vel.angular.z = 0
                     vel.linear.x = 0
@@ -392,9 +405,7 @@ def main():
         Main function that initializes the node and the FSM.
         After that it starts the node and the FSM
     """
-
-    rospy.init_node('command_manager_state_machine')
-    
+     
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['container_interface'])
     sm.userdata.sm_counter = 0

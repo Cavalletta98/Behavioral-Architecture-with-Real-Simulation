@@ -10,7 +10,7 @@
 
     <!-- Min and max delay for transition between PLAY and NORMAL states -->
     <param name="min_transition_play_normal" type="int" value="1" />
-    <param name="max_transition_play_normal" type="int" value="40" />
+    <param name="max_transition_play_normal" type="int" value="400" />
 
     <!-- Min and max delay for transition between NORMAL and SLEEP states -->
     <param name="min_transition_normal_sleep" type="int" value="1" />

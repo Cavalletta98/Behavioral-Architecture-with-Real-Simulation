@@ -101,10 +101,18 @@ The robot is a pet that interact with a human who moves the ball into an a simul
 - It is possible to make the ball disappear simply by moving it under the ground
 
 # System's limitations
-
+- Slight wheelies of the robot when it passes from NORMAL to PLAY state
+- Shaking of the camera due to the joint of the head
+- Very slight wheelies of the robot when it starts to reach a position during NORMAL behavior
+- Whether the ball moves towards the robot and comes very close to it, whether the ball passes through the robot but in front of the camera, whether the robot reaches the ball but it starts moving, the robot moves its head
+- Robot shaking while following the ball
 
 # Possible technical improvements
-
+- Fine tune the PID values for the head joint
+- Adopt an incremental gain solution in order to avoid robot wheelies and allow very fast ball following
+- Keeping this robot geometry, adopt a control solution that allows you to follow the ball without shaking
+- Add collision properties to the ball
+- Adopt a different mechanism to understand if the ball is stationary or not
 
 # Author and contact
 [Simone Voto](https://github.com/Cavalletta98) - simone.voto98@gmail.com
