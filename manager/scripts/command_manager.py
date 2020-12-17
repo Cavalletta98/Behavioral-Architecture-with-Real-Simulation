@@ -153,6 +153,9 @@ class play(smach.State):
             radius = float(ball[1])
             
             if ((center == -1) and (radius == -1)):
+                vel = Twist()
+                vel.angular.z = 0.5
+                self.vel_pub.publish(vel)
                 count += 1
                 if(count == transition_value):
                     return 'someTimes'
@@ -405,6 +408,8 @@ def main():
         Main function that initializes the node and the FSM.
         After that it starts the node and the FSM
     """
+
+    rospy.init_node('command_manager_state_machine')
      
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['container_interface'])
