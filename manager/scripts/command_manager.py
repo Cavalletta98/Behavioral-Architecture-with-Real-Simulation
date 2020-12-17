@@ -13,6 +13,7 @@ import smach_ros
 import time
 import random
 import actionlib
+import math
 
 from robot_control.msg import RobotPlanningAction, RobotPlanningActionGoal
 from sensoring.srv import DetectImage
@@ -164,7 +165,7 @@ class play(smach.State):
                 vel = Twist()
                 vel.angular.z = 0.003*(center-400)
                 vel.linear.x = -0.007*(radius-110)
-                if(100-radius <= 0):
+                if((radius >= 100) and (abs(vel.linear.x) <= 0.06) and (abs(vel.angular.z) <= 0.1)):
                     vel.angular.z = 0
                     vel.linear.x = 0
                     self.vel_pub.publish(vel)
@@ -190,7 +191,7 @@ class play(smach.State):
             elif(radius < 10):
                 count = 0
                 vel = Twist()
-                vel.linear.x = 0.5
+                vel.linear.x = 0.09
                 self.vel_pub.publish(vel)
 
                            
