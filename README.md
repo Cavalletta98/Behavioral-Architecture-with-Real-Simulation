@@ -50,12 +50,14 @@ The parameters are:
 
 - `home_pos_x,home_pos_x`: define the home position in the map (double)
 - `map_x,map_y`: define the dimensions of the map (integer)
-- `min_delay_command,max_delay_command`: define the min and max delay for sending the random position of the ball (double)
-- `min_transition_play_normal,max_transition_play_normal`: define the min and max delay to trasit between PLAY and NORMAL (integer)
+- `min_delay_ball,max_delay_ball`: define the min and max delay for sending the random position of the ball (double)
+- `min_transition_play_normal,max_transition_play_normal`: define the min and max delay to trasit between PLAY and NORMAL (integer,suggested values:80-400)
 - `min_transition_normal_sleep,max_transition_normal_sleep`: define the min and max delay to trasit between NORMAL and SLEEP (integer)
 - `min_sleep_delay,max_sleep_delay`: define the min and max delay for the SLEEP state (double)
 - `min_dis_ball_delay,max_dis_ball_delay`: define the min and max delay for disappearing the ball (int)
-
+- `min_clock_head_delay,max_clock_head_delay`: define the min and max delay for keeping the head in the -45° position
+- `min_countclock_head_delay,max_countclock_head_delay`: define the min and max delay for keeping the head in the 45° position
+- `min_head_delay,max_head_delay`: define the min and max delay for keeping the head in the 0° position
 
 # Packages and files
 There are 3 packages:
@@ -64,6 +66,7 @@ There are 3 packages:
 - `Robot control`: contains the [robot_controller.py](robot_control/src/robot_controller.py) file used to move the robot toward a target position
 - `Command manager`: contains the [command_manager.py](manager/src/command_manager) file that implements the FSM of robot behaviors.
 - `Simulation`: contains all the files necessary for running the simulation
+
 # Installation and running
 In order to run this software, the following prerequisities are needed:
 - [ROS Noetic](http://wiki.ros.org/noetic)
@@ -88,23 +91,26 @@ roslaunch launch_file.launch
 ```
 
 # Working hypothesis and environment
-The robot is a pet that interact with a human who moves the ball into an a simulated arena. Target position of the robot and the ball belong to the arena. The robot has 3 behaviours: PLAY,NORMAL,SLEEP. The PLAY behaviour will start only if the robot sees the ball. The ball is green and is very big with respect to the robot in order to detect it. The home position can be initialize before starting the simulation and cannot be changed during the execution. The word "someTimes" is inteded as number of cycles for which it si executed a piece of code. The ball has no collisions
+The robot is a pet that interact with a human who moves the ball into an a simulated arena. The arena is a 7x7 grid. Target position of the robot and the ball belong to the arena. The robot has 3 behaviours: PLAY,NORMAL,SLEEP. The PLAY behaviour will start only if the robot sees the ball. The ball is green and is very big with respect to the robot in order to detect it. The home position can be initialize before starting the simulation and cannot be changed during the execution. The word "someTimes" is inteded as number of cycles for which it is executed a piece of code. The ball has no collisions.The ball is considered stationary when the robot is close to it and is stopped.
 
 # System's features
 - Specify different dimensions of the arena
 - It is possibile to define different delays for the simulation
-- Define different position of the "home" inside the arena before start the simulation
+- It is possibile to define different position of the "home" inside the arena before start the simulation
 - It is possible to visualize the states transition in the shell
 - The robot will notify if it will reach the target position and it is possibile to visualize it in the shell (the position that the robot has reached)
 - The robot can perceives the ball even if it is moving in the NORMAL state
 - It is possibile to see the camera of the robot in a separated window with the possibility to see a circle around the detected ball
 - It is possible to make the ball disappear simply by moving it under the ground
+- All the delays are random values between the defined ranges
+- The robot ignores the ball when it is in the SLEEP state
+- The robot can follow the ball well when it starts to exit the robot's field of view quickly enough thanks to the choice of a good gain for angular velocity
 
 # System's limitations
 - Slight wheelies of the robot when it passes from NORMAL to PLAY state
 - Shaking of the camera due to the joint of the head
-- Very slight wheelies of the robot when it starts to reach a position during NORMAL behavior
-- Whether the ball moves towards the robot and comes very close to it, whether the ball passes through the robot but in front of the camera, whether the robot reaches the ball but it starts moving, the robot moves its head
+- Very slight wheelies of the robot when it starts to move torward a position during NORMAL behavior
+- When the ball moves close to the robot but it is stationary, the robot moves its head
 - Robot shaking while following the ball
 
 # Possible technical improvements
