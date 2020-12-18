@@ -9,10 +9,10 @@ import actionlib
 from simulation.msg import PlanningAction, PlanningActionGoal
 
 ## Min delay for command generation
-min_delay_command = rospy.get_param("min_delay_command")
+min_delay_ball = rospy.get_param("min_delay_ball")
 
 ## Max delay for command generation
-max_delay_command = rospy.get_param("max_delay_command")
+max_delay_ball = rospy.get_param("max_delay_ball")
 
 ## Min delay for command generation
 min_dis_ball_delay = rospy.get_param("min_dis_ball_delay")
@@ -66,7 +66,7 @@ def ball():
         client.wait_for_result()
 
         count_ball = count_ball + 1
-        rospy.sleep(random.uniform(min_delay_command,max_delay_command))
+        rospy.sleep(random.uniform(min_delay_ball,max_delay_ball))
 
 if __name__ == '__main__':
     try:

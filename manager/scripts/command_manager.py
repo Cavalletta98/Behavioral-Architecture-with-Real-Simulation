@@ -13,7 +13,6 @@ import smach_ros
 import time
 import random
 import actionlib
-import math
 
 from robot_control.msg import RobotPlanningAction, RobotPlanningActionGoal
 from sensoring.srv import DetectImage
@@ -106,14 +105,15 @@ class play(smach.State):
 
         ## ROS Publisher object for controlling the head of the robot
         self.head_pub = rospy.Publisher('/myrobot/head_joint_position_controller/command', Float64, queue_size=1)
+        self.head_sleep = 0
 
     def jointState(self,data):
 
         '''
             Get the head joint state in order to check if it is reached the desired angle
         '''
-
-        if(data.process_value >= data.set_point):
+        if(abs(data.process_value - data.set_point) <= 0.017):
+            self.head_sleep = 1
             self.joint_state.unregister()
 
     def object_detector_client(self):
@@ -174,17 +174,26 @@ class play(smach.State):
                     head_angle.data = 0.78
                     self.head_pub.publish(head_angle)
                     self.joint_state = rospy.Subscriber('/myrobot/head_joint_position_controller/state',JointControllerState,self.jointState,queue_size=1)
+                    while(self.head_sleep != 1):
+                        pass
                     time.sleep(random.uniform(min_sleep_delay,max_sleep_delay))
 
+                    self.head_sleep = 0
                     head_angle.data = -0.78
                     self.head_pub.publish(head_angle)
                     self.joint_state = rospy.Subscriber('/myrobot/head_joint_position_controller/state',JointControllerState,self.jointState,queue_size=1)
+                    while(self.head_sleep != 1):
+                        pass
                     time.sleep(random.uniform(min_countclock_head_delay,max_countclock_head_delay))
                     
+                    self.head_sleep = 0
                     head_angle.data = 0
                     self.head_pub.publish(head_angle)
                     self.joint_state = rospy.Subscriber('/myrobot/head_joint_position_controller/state',JointControllerState,self.jointState,queue_size=1)
+                    while(self.head_sleep != 1):
+                        pass
                     time.sleep(random.uniform(min_head_delay,max_head_delay))
+                    self.head_sleep = 0
 
                 else:
                     self.vel_pub.publish(vel)

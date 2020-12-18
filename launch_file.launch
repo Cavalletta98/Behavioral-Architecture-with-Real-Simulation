@@ -4,9 +4,9 @@
     <param name="home_pos_x" type="int" value="-7" />
     <param name="home_pos_y" type="int" value="2" />
 
-    <!-- Min and max delay for sending command -->
-    <param name="min_delay_command" type="double" value="1" />
-    <param name="max_delay_command" type="double" value="10" />
+    <!-- Min and max delay for moving the ball -->
+    <param name="min_delay_ball" type="double" value="1" />
+    <param name="max_delay_ball" type="double" value="10" />
 
     <!-- Min and max delay for transition between PLAY and NORMAL states -->
     <param name="min_transition_play_normal" type="int" value="80" />
@@ -25,8 +25,8 @@
     <param name="max_clock_head_delay" type="double" value="10" />
 
     <!-- Min and max delay for mantaining 45° counterclockwise the head -->
-    <param name="min_countclock_head_delay" type="double" value="1" />
-    <param name="max_countclock_head_delay" type="double" value="10" />
+    <param name="min_countclock_head_delay" type="double" value="0.1" />
+    <param name="max_countclock_head_delay" type="double" value="1" />
 
     <!-- Min and max delay for mantaining 0° the head -->
     <param name="min_head_delay" type="double" value="1" />
