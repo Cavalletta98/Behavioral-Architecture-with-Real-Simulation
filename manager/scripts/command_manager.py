@@ -80,15 +80,19 @@ class play(smach.State):
         @param head_pub: variable that represents a publisher for controlling the head of the robot
         @type head_pub: Publisher
 
+        @param head_sleep: variable that notifies when it is reached the desired angle for the head joint
+                            and it is time to sleep
+        @type head_sleep: Int
+
         Methods
         -----
         object_detector_client():
             Makes a request to detector server and wait for the response
         jointState(data)
             Get the head joint state in order to check if it is reached the desired angle
-        execute()
+        execute(userdata)
             It checks if there is the ball.If there is the ball, it moves the robot toward the ball and if the
-            robot reaches the ball, it starts to move the head 45° to the left, 45° to the right and back to
+            robot reaches the ball and it is stopped, it starts to move the head 45° to the left, 45° to the right and back to
             the 0 position. After some times the robot doesen't see the ball, it switches to the NORMAL state
     """
 
@@ -105,12 +109,16 @@ class play(smach.State):
 
         ## ROS Publisher object for controlling the head of the robot
         self.head_pub = rospy.Publisher('/myrobot/head_joint_position_controller/command', Float64, queue_size=1)
+        ## Variable that notifies when it is reached the desired angle for the head joint and it is time to sleep
         self.head_sleep = 0
 
     def jointState(self,data):
 
         '''
             Get the head joint state in order to check if it is reached the desired angle
+
+            @param data: joint state
+            @type data: JointControllerState
         '''
         if(abs(data.process_value - data.set_point) <= 0.017):
             self.head_sleep = 1
@@ -138,8 +146,14 @@ class play(smach.State):
 
         '''
             It checks if there is the ball.If there is the ball, it moves the robot toward the ball and if the
-            robot reaches the ball, it starts to move the head 45° to the left, 45° to the right and back to
+            robot reaches the ball and it is stopped, it starts to move the head 45° to the left, 45° to the right and back to
             the 0 position. After some times the robot doesen't see the ball, it switches to the NORMAL state
+
+            @param userdata: used to pass data bejoint_state = tween states
+            @type userdata: list
+
+            @returns: transition value
+            @rtype: String
         '''
 
         rospy.loginfo('Executing state PLAY')
@@ -173,6 +187,7 @@ class play(smach.State):
                     head_angle = Float64()
                     head_angle.data = 0.78
                     self.head_pub.publish(head_angle)
+                    ## ROS subscriber for the head joint state
                     self.joint_state = rospy.Subscriber('/myrobot/head_joint_position_controller/state',JointControllerState,self.jointState,queue_size=1)
                     while(self.head_sleep != 1):
                         pass
@@ -215,7 +230,7 @@ class sleep(smach.State):
         -----
         target_pos_client(x, y):
             Send a goal to the action server of the robot and waits until it reaches the goal.
-        execute()
+        execute(userdata)
             It send the robot to the home position and, after the robot reaches the position,
             sleeps for a random time of seconds. After that change the state to NORMAL
     """
@@ -302,7 +317,7 @@ class normal(smach.State):
         target_pos_client(x,y)
             Send a goal to the action server of the robot and waits until it reaches the goal.
             While it is waiting, if there is the ball, it stops the robot and return None
-        execute()
+        execute(userdata)
             It checks if there is the ball, otherwise it will generate a random goal (x and y)
             for the robot. If there is the ball, it switches to the PLAY state.
             After some times, it switches to the SLEEP state

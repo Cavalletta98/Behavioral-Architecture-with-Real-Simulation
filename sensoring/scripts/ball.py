@@ -8,16 +8,16 @@ import random
 import actionlib
 from simulation.msg import PlanningAction, PlanningActionGoal
 
-## Min delay for command generation
+## Min delay for moving the ball
 min_delay_ball = rospy.get_param("min_delay_ball")
 
-## Max delay for command generation
+## Max delay for moving the ball
 max_delay_ball = rospy.get_param("max_delay_ball")
 
-## Min delay for command generation
+## Min delay for disappeariung the ball
 min_dis_ball_delay = rospy.get_param("min_dis_ball_delay")
 
-## Max delay for command generation
+## Max delay for disappeariung the ball
 max_dis_ball_delay = rospy.get_param("max_dis_ball_delay")
 
 ## x coordinate of the map

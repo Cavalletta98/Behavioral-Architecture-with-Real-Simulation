@@ -17,6 +17,7 @@ import rospy
 from sensor_msgs.msg import CompressedImage
 from sensoring.srv import DetectImage,DetectImageResponse
 
+## Variable for logging purpose
 VERBOSE = False
 
 class image_feature:
@@ -180,7 +181,7 @@ class ball_info:
 
         """
             Received a request and reply with the center and radius
-            of the ball
+            of the ball(the request is empty)
 
             @returns: radius and center of the ball
             @rtype: DetectImageResponse

@@ -15,9 +15,11 @@ import actionlib
 import actionlib.msg
 import robot_control.msg
 
-## Robot state variables
+## Robot position
 position_ = Point()
+## Robot pose
 pose_ = Pose()
+## Robot yaw angle
 yaw_ = 0
 
 ## Machine state
@@ -25,12 +27,16 @@ state_ = 0
 
 ## Goal position
 desired_position_ = Point()
+## Z coordinate of goal position
 desired_position_.z = 0
 
-## Parameters
+## Precision for yaw angle
 yaw_precision_ = math.pi / 9  # +/- 20 degree allowed
+## Precision for yaw angle2
 yaw_precision_2_ = math.pi / 90  # +/- 2 degree allowed
+## Precision for distance
 dist_precision_ = 0.1
+## PID parameters
 kp_a = -3.0  ## In ROS Noetic, it may be necessary to change the sign of this proportional controller
 kp_d = 0.2
 ub_a = 0.6
@@ -185,7 +191,7 @@ def planning(goal):
 
     '''
         Implement action server through a state machine that 
-        initially rotatethe robot toward the goal position 
+        initially rotate the robot toward the goal position 
         and then move it
 
         @param goal: robot target position
