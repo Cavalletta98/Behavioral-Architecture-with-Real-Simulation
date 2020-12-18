@@ -160,6 +160,7 @@ System's features</h1>
 <li>All the delays are random values between the defined ranges</li>
 <li>The robot ignores the ball when it is in the SLEEP state</li>
 <li>The robot can follow the ball well when it starts to exit the robot's field of view quickly enough thanks to the choice of a good gain for angular velocity</li>
+<li>The robot starts to rotate, for a certain period of time, to look for the ball when it loses it before passing to the NORMAL state</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md9"></a>
 System's limitations</h1>
@@ -169,6 +170,7 @@ System's limitations</h1>
 <li>Very slight wheelies of the robot when it starts to move torward a position during NORMAL behavior</li>
 <li>When the ball moves close to the robot but it is stationary, the robot moves its head</li>
 <li>Robot shaking while following the ball</li>
+<li>Since the PLAY-NORMAL transition is implemented as a number of cycles, if the range is small (e.g. 1-10), the transition will be fast (use suggested range or different values)</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md10"></a>
 Possible technical improvements</h1>
@@ -178,6 +180,7 @@ Possible technical improvements</h1>
 <li>Keeping this robot geometry, adopt a control solution that allows you to follow the ball without shaking</li>
 <li>Add collision properties to the ball</li>
 <li>Adopt a different mechanism to understand if the ball is stationary or not</li>
+<li>Implement the transition mechanism between PLAY and NORMAL with a timer</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md11"></a>
 Author and contact</h1>

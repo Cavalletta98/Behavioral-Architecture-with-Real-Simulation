@@ -105,6 +105,7 @@ The robot is a pet that interact with a human who moves the ball into an a simul
 - All the delays are random values between the defined ranges
 - The robot ignores the ball when it is in the SLEEP state
 - The robot can follow the ball well when it starts to exit the robot's field of view quickly enough thanks to the choice of a good gain for angular velocity
+- The robot starts to rotate, for a certain period of time, to look for the ball when it loses it before passing to the NORMAL state
 
 # System's limitations
 - Slight wheelies of the robot when it passes from NORMAL to PLAY state
@@ -112,6 +113,7 @@ The robot is a pet that interact with a human who moves the ball into an a simul
 - Very slight wheelies of the robot when it starts to move torward a position during NORMAL behavior
 - When the ball moves close to the robot but it is stationary, the robot moves its head
 - Robot shaking while following the ball
+- Since the PLAY-NORMAL transition is implemented as a number of cycles, if the range is small (e.g. 1-10), the transition will be fast (use suggested range or different values)
 
 # Possible technical improvements
 - Fine tune the PID values for the head joint
@@ -119,6 +121,7 @@ The robot is a pet that interact with a human who moves the ball into an a simul
 - Keeping this robot geometry, adopt a control solution that allows you to follow the ball without shaking
 - Add collision properties to the ball
 - Adopt a different mechanism to understand if the ball is stationary or not
+- Implement the transition mechanism between PLAY and NORMAL with a timer
 
 # Author and contact
 [Simone Voto](https://github.com/Cavalletta98) - simone.voto98@gmail.com
